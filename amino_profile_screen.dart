@@ -262,55 +262,22 @@ class _AminoProfileState extends State<AminoProfileScreen>
                                                                   .connectionState ==
                                                               ConnectionState
                                                                   .waiting) {
-                                                            return users
-                                                                    .isNotEmpty
-                                                                ? Column(
-                                                                    children: [
-                                                                      SizedBox(
-                                                                        height:
-                                                                            5,
-                                                                      ),
-                                                                      CircularProgressIndicator(
-                                                                        color: Color.fromARGB(
-                                                                            255,
-                                                                            227,
-                                                                            255,
-                                                                            228),
-                                                                        backgroundColor:
-                                                                            Colors.grey[300],
-                                                                      ),
-                                                                      Padding(
-                                                                          padding:
-                                                                              EdgeInsets.symmetric(vertical: 10)),
-                                                                      Container(
-                                                                        width: double
-                                                                            .infinity,
-                                                                        height:
-                                                                            2.0,
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          gradient:
-                                                                              LinearGradient(
-                                                                            colors: [
-                                                                              Colors.green[500]!,
-                                                                              Colors.grey[500]!
-                                                                            ],
-                                                                            begin:
-                                                                                Alignment.centerLeft,
-                                                                            end:
-                                                                                Alignment.centerRight,
-                                                                          ),
-                                                                        ),
-                                                                      )
-                                                                    ],
-                                                                  )
-                                                                : SizedBox();
+                                                            return const SizedBox();
                                                           }
                                                           if (snapshot
                                                               .hasError) {
                                                             return Text(
                                                                 'Error: ${snapshot.error}');
                                                           } else {
+                                                            if ('${snapshot.data}' !=
+                                                                'OK') {
+                                                              print('ok');
+                                                              setState(
+                                                                () {
+                                                                  connectedUsersCount++;
+                                                                },
+                                                              );
+                                                            }
                                                             return Column(
                                                               children: [
                                                                 Card(
@@ -329,16 +296,19 @@ class _AminoProfileState extends State<AminoProfileScreen>
                                                                       height:
                                                                           50,
                                                                       child: getImage(
-                                                                          object
-                                                                              .icon),
+                                                                          imageUrl:
+                                                                              object.icon),
                                                                     )),
                                                                     trailing: '${snapshot.data}' ==
                                                                             'OK'
                                                                         ? const Icon(
                                                                             Icons
                                                                                 .check,
-                                                                            color: Colors
-                                                                                .green)
+                                                                            color: Color.fromARGB(
+                                                                                255,
+                                                                                84,
+                                                                                131,
+                                                                                86))
                                                                         : const Icon(
                                                                             Icons
                                                                                 .close,
@@ -376,7 +346,28 @@ class _AminoProfileState extends State<AminoProfileScreen>
                                                   ),
                                                 )
                                               else
-                                                const Text(''),
+                                                Visibility(
+                                                  visible: !_isVisible,
+                                                  child: Column(
+                                                    children: [
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      CircularProgressIndicator(
+                                                        color: const Color
+                                                                .fromARGB(
+                                                            255, 227, 255, 228),
+                                                        backgroundColor:
+                                                            Colors.grey[300],
+                                                      ),
+                                                      const Padding(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  vertical:
+                                                                      10)),
+                                                    ],
+                                                  ),
+                                                ),
                                               Visibility(
                                                 visible: _isVisible,
                                                 child: Container(
@@ -561,7 +552,7 @@ class _AminoProfileState extends State<AminoProfileScreen>
                                                                             .toString());
                                                                   });
                                                                   if (connectedUsersCount !=
-                                                                      null) {
+                                                                      0) {
                                                                     print(
                                                                         "connectedUsersCount  :$connectedUsersCount ");
                                                                     for (var start =
@@ -602,13 +593,14 @@ class _AminoProfileState extends State<AminoProfileScreen>
                                                                             icon:
                                                                                 onlineUsersInfo.icon[index],
                                                                           );
-
-                                                                          setState(
-                                                                              () {
-                                                                            print("user.nickname ${user.nickname}");
-                                                                            users.add(user);
-                                                                          });
+                                                                          users.add(
+                                                                              user);
                                                                         }
+                                                                        setState(
+                                                                            () {
+                                                                          print(
+                                                                              " ${users.length}");
+                                                                        });
                                                                       }).catchError(
                                                                               (error) {
                                                                         print(
@@ -732,7 +724,8 @@ class _AminoProfileState extends State<AminoProfileScreen>
       String result = await AminoClient(sid: Sid)
           .invite_to_chat(userId: userId, chatId: chatId, comId: comId);
 
-      if (result == 'Error occurred' || result == '403') {
+      if ((result == 'Error occurred' || result == '403') ||
+          result == "Invalid session. Please re-login.") {
         // await showErrorDialog(context, result.toString());
         setState(() {
           users.clear();
@@ -843,7 +836,7 @@ class _AminoProfileState extends State<AminoProfileScreen>
           children: [
             TextSpan(
               text: '/${connectedUsersCount ?? 0}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 color: Colors.grey,
               ),
